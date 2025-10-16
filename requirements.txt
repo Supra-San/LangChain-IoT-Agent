@@ -1,0 +1,11 @@
+# MQTT communication
+paho-mqtt
+
+# Environment variable loader
+python-dotenv
+
+# LangChain ecosystem
+langchain
+langchain-core
+langchain-community
+langchain-openai
