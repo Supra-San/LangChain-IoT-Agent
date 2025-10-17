@@ -7,6 +7,13 @@ The system works without explicit logic, relying entirely on LLM reasoning.<br /
 This project demonstrates an autonomous AI agent that controls a relay (representing an air conditioner or fan) through ESP32, based on environmental data from a DHT22 sensor.
 All control logic is decided by a Large Language Model (LLM) using LangChain — making the decision process fully AI-driven.<br />
 
+# ⚙️ System Architecture
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/e1b3d515-23c2-4b3e-82f2-d390bfeece76" />
+<img width="1280" height="720" alt="image" src="https://github.com/user-attachments/assets/bd1e2ca4-6e23-493e-b74c-b73bde69886d" />
+
+
+
+
 # 🧩 Components
 
 | Component           | Description                                                |
