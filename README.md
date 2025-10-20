@@ -51,7 +51,7 @@ All control logic is decided by a Large Language Model (LLM) using LangChain —
 ### Clone the repository:
 ```bash
 git clone https://github.com/<your-username>/AI-IoT-SmartRoom.git
-cd AI-IoT-SmartRoom
+cd LangChain-IoT-Agent
 ```
 
 ### Create virtual environment
