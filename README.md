@@ -50,7 +50,7 @@ All control logic is decided by a Large Language Model (LLM) using LangChain —
 #### 💻 2. Setup Python Environment
 ### Clone the repository:
 ```bash
-git clone https://github.com/<your-username>/AI-IoT-SmartRoom.git
+git clone https://github.com/Supra-San/LangChain-IoT-Agent
 cd LangChain-IoT-Agent
 ```
 
