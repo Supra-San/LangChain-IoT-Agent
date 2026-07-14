@@ -9,24 +9,49 @@ and IoT devices such as ESP32. The class is designed for simplicity and easy int
 with LangChain-based intelligent agents.
 """
 
+import ssl
 import paho.mqtt.client as mqtt
+
+try:
+    from paho.mqtt.enums import CallbackAPIVersion
+    CALLBACK_API_VERSION = CallbackAPIVersion.VERSION1
+except ImportError:
+    CALLBACK_API_VERSION = None
 
 class MQTTClient:
     """
     A simple MQTT client wrapper for connecting, subscribing, and publishing
-    messages to an MQTT broker (e.g., HiveMQ Public Broker).
-
-    Used by the AI Agent to communicate with the ESP32 device.
+    messages to an MQTT broker with optional SSL/TLS support.
     """
 
-    def __init__(self, broker="broker.hivemq.com", port=1883, client_id="AI_Agent_Client"):
-        """Initialize MQTT client with connection parameters."""
+    def __init__(self, broker="localhost", port=8883, client_id="AI_Agent_Client",
+                 ca_certs=None, certfile=None, keyfile=None, keyfile_password=None):
+        """Initialize MQTT client with connection parameters and TLS options."""
         self.broker = broker
         self.port = port
         self.client_id = client_id
 
-        # Create MQTT client instance
-        self.client = mqtt.Client(client_id=self.client_id, protocol=mqtt.MQTTv311)
+        # Create MQTT client instance (handle Paho 2.x Callback API)
+        if CALLBACK_API_VERSION is not None:
+            self.client = mqtt.Client(callback_api_version=CALLBACK_API_VERSION, client_id=self.client_id, protocol=mqtt.MQTTv311)
+        else:
+            self.client = mqtt.Client(client_id=self.client_id, protocol=mqtt.MQTTv311)
+
+        # Set up SSL/TLS if CA cert is provided
+        if ca_certs:
+            print(f"[🛡️] Configuring SSL/TLS for {client_id}...")
+            self.client.tls_set(
+                ca_certs=ca_certs,
+                certfile=certfile,
+                keyfile=keyfile,
+                keyfile_password=keyfile_password,
+                cert_reqs=ssl.CERT_REQUIRED,
+                tls_version=ssl.PROTOCOL_TLSv1_2
+            )
+            # [R-01 FIX] Hostname verification is ENABLED (False = secure).
+            # The server certificate must include a Subject Alternative Name (SAN)
+            # extension for localhost/127.0.0.1 (see generate_certs.sh).
+            self.client.tls_insecure_set(False)
 
         # Define callback methods
         self.client.on_connect = self.on_connect

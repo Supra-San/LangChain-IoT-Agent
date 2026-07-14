@@ -4,4 +4,9 @@ __pycache__/
 *.log
 .vscode/
 .idea/
-
+venv/
+.venv/
+certs/
+credentials.md
+esp32/secrets.h
+security_review.md

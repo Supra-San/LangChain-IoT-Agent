@@ -1,20 +1,18 @@
 #include <WiFi.h>
-#include <WiFiClient.h>
+#include <WiFiClientSecure.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "DHT.h"
-
-/************************* WiFi Configuration *******************************/
-#define WLAN_SSID       "your_ssid"
-#define WLAN_PASS       "your_password"
+#include "secrets.h"
 
 /************************* MQTT Configuration *******************************/
-#define MQTT_SERVER     "broker.hivemq.com"
-#define MQTT_PORT       1883
+#define MQTT_SERVER     "192.168.1.10" // Ganti dengan IP Broker MQTT Anda (misal Mosquitto server local)
+#define MQTT_PORT       8883           // Port MQTT TLS standar
 
 #define SENSOR_TOPIC    "home/room1/sensor"
 #define CONTROL_TOPIC   "home/room1/control"
 #define STATUS_TOPIC    "home/room1/status"
+
 
 /************************* DHT22 Sensor Setup *******************************/
 #define DHTPIN 4
@@ -26,7 +24,7 @@ DHT dht(DHTPIN, DHTTYPE);
 bool relayState = false;
 
 /************************* MQTT Client Setup *******************************/
-WiFiClient client;
+WiFiClientSecure client;
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT);
 Adafruit_MQTT_Publish dht22_sensor = Adafruit_MQTT_Publish(&mqtt, SENSOR_TOPIC);
 Adafruit_MQTT_Subscribe control_topic = Adafruit_MQTT_Subscribe(&mqtt, CONTROL_TOPIC);
@@ -49,6 +47,11 @@ void setup() {
   Serial.println("\n✅ WiFi Connected!");
   Serial.print("📡 IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Setup TLS Certificates
+  client.setCACert(root_ca);
+  client.setCertificate(client_cert);
+  client.setPrivateKey(client_key);
 
   dht.begin();
 
@@ -93,9 +96,9 @@ void loop() {
     }
   }
 
-  // Publish sensor data every 5 seconds
+  // Publish sensor data every 5 minutes (Optimized from 5s to avoid API rate limits)
   static unsigned long lastSend = 0;
-  if (millis() - lastSend > 5000) {
+  if (millis() - lastSend > 300000) {
     lastSend = millis();
 
     float h = dht.readHumidity();
@@ -129,7 +132,7 @@ void MQTT_connect() {
     return;
   }
 
-  Serial.print("🔌 Connecting to MQTT... ");
+  Serial.print("🔌 Connecting to SECURE MQTT... ");
 
   uint8_t retries = 3;
   while ((ret = mqtt.connect()) != 0) {
@@ -139,8 +142,9 @@ void MQTT_connect() {
     delay(5000);
     retries--;
     if (retries == 0) {
-      Serial.println("❌ Unable to connect to MQTT broker.");
-      while (1);
+      Serial.println("❌ Gagal terhubung ke MQTT broker. Memulai ulang ESP32...");
+      delay(5000);
+      ESP.restart(); // Restart device automatically instead of freezing
     }
   }
 
